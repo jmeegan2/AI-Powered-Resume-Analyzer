@@ -87,23 +87,40 @@ app.post('/api/analyze-resume', upload.single('resume'), async (req, res) => {
     }
 
     // Create prompt for Gemini
-    const prompt = `
-You are a professional resume analyzer. I will provide you with a job description and a resume. 
-
-Please analyze the resume against the job description and provide:
-
-1. **Missing Keywords**: List the important keywords/skills from the job description that are missing or underrepresented in the resume
-2. **Keyword Match Analysis**: Identify which keywords from the job description are present in the resume
-3. **Recommendations**: Suggest specific improvements to make the resume more aligned with the job description
-4. **Overall Match Score**: Rate the resume's alignment with the job description (1-10)
-
-Format your response as JSON with the following structure:
-{
-  "missingKeywords": ["keyword1", "keyword2", ...],
-  "presentKeywords": ["keyword1", "keyword2", ...],
-  "recommendations": ["recommendation1", "recommendation2", ...],
-  "matchScore": 7,
-  "analysis": "Brief summary of the analysis"
+    const prompt = `{
+  "prompt": "You are a professional resume analyzer specializing in Applicant Tracking Systems (ATS) optimization. I will provide you with a job description and a resume. Your goal is to identify how well the resume aligns with the job description's ATS-relevant keywords and provide actionable feedback. Focus on direct matches and common synonyms that an ATS would recognize.",
+  "analysis_tasks": [
+    {
+      "task_name": "missingKeywords",
+      "description": "Identify and list all distinct keywords and key phrases from the 'Responsibilities' and 'Requirements' sections of the job description that are either completely absent from the resume or significantly underrepresented (e.g., mentioned only once when clearly a core requirement). Consider both single words (e.g., 'React') and multi-word phrases (e.g., 'test-driven development')."
+    },
+    {
+      "task_name": "presentKeywords",
+      "description": "List all distinct keywords and key phrases from the 'Responsibilities' and 'Requirements' sections of the job description that are clearly present in the resume. For each keyword, indicate if it's a direct match or a strong synonym/related concept that an ATS would likely identify. Prioritize keywords that appear in the 'Experience' or 'Technical Skills' sections."
+    },
+    {
+      "task_name": "recommendations",
+      "description": "Provide specific, actionable recommendations for modifying the resume to improve its ATS keyword density and relevance. Recommendations should include: 1. How to incorporate missing keywords into specific sections (e.g., 'Add 'GraphQL' to your 'Experience' bullet points by describing a relevant project.'). 2. How to expand on existing keywords for stronger ATS recognition (e.g., 'Elaborate on 'CI/CD' experience with tools like Jenkins or GitHub Actions.'). 3. Suggestions for tailoring the 'Profile' or 'Summary' section to include high-priority keywords from the job description. 4. Advice on quantifying achievements where possible to demonstrate impact for ATS and human readers."
+    },
+    {
+      "task_name": "matchScore",
+      "description": "Provide an overall numerical score (1-100) representing the resume's alignment with the job description, specifically from an ATS perspective. A higher score indicates better keyword matching and relevance."
+    },
+    {
+      "task_name": "analysis",
+      "description": "Provide a brief, concise summary (2-3 sentences) of the ATS analysis, highlighting the resume's strengths in keyword matching and the primary areas for improvement."
+    }
+  ],
+  "output_format": {
+    "missingKeywords": ["keyword1", "keyword2", "..."],
+    "presentKeywords": [
+      {"keyword": "keyword_from_job_description", "found_in_resume": "how_it_appears_in_resume", "section": "section_name"},
+      ...
+    ],
+    "recommendations": ["recommendation1", "recommendation2", "..."],
+    "matchScore": 70,
+    "analysis": "Brief summary of the ATS analysis."
+  }
 }
 
 Job Description:
@@ -137,7 +154,7 @@ ${resumeText}
         missingKeywords: [],
         presentKeywords: [],
         recommendations: [],
-        matchScore: 5,
+        matchScore: 50,
         analysis: analysisText,
         rawResponse: analysisText
       };
