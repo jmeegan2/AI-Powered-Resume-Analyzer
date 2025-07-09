@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
 const pdfParse = require('pdf-parse');
-const { GoogleGenAI } = require("@google/genai");
+const { GoogleGenAI, Type } = require("@google/genai");
 
 const app = express();
 const port = process.env.PORT || 5001;
@@ -37,6 +37,42 @@ if (!apiKey) {
 }
 
 const ai = new GoogleGenAI({ apiKey });
+
+// Define the response schema for Gemini output
+const analysisResponseSchema = {
+  type: Type.OBJECT,
+  properties: {
+    missingKeywords: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING }
+    },
+    presentKeywords: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          keyword: { type: Type.STRING },
+          found_in_resume: { type: Type.STRING },
+          section: { type: Type.STRING }
+        },
+        propertyOrdering: ["keyword", "found_in_resume", "section"]
+      }
+    },
+    recommendations: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING }
+    },
+    matchScore: { type: Type.NUMBER },
+    analysis: { type: Type.STRING }
+  },
+  propertyOrdering: [
+    "missingKeywords",
+    "presentKeywords",
+    "recommendations",
+    "matchScore",
+    "analysis"
+  ]
+};
 
 // Helper function to extract text from different file types
 async function extractTextFromFile(file) {
@@ -111,16 +147,6 @@ app.post('/api/analyze-resume', upload.single('resume'), async (req, res) => {
       "description": "Provide a brief, concise summary (2-3 sentences) of the ATS analysis, highlighting the resume's strengths in keyword matching and the primary areas for improvement."
     }
   ],
-  "output_format": {
-    "missingKeywords": ["keyword1", "keyword2", "..."],
-    "presentKeywords": [
-      {"keyword": "keyword_from_job_description", "found_in_resume": "how_it_appears_in_resume", "section": "section_name"},
-      ...
-    ],
-    "recommendations": ["recommendation1", "recommendation2", "..."],
-    "matchScore": 70,
-    "analysis": "Brief summary of the ATS analysis."
-  }
 }
 
 Job Description:
@@ -134,31 +160,14 @@ ${resumeText}
     const model = ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: analysisResponseSchema
+      }
     });
 
     const response = await model;
-    const analysisText = response.text;
-
-    // Try to parse the response as JSON, fallback to text if it's not valid JSON
-    let analysis;
-    try {
-      let cleaned = analysisText.trim();
-      // Remove triple backticks and optional "json" after them
-      if (cleaned.startsWith('```')) {
-        cleaned = cleaned.replace(/^```[a-zA-Z]*\n?/, '').replace(/```$/, '');
-      }
-      analysis = JSON.parse(cleaned);
-    } catch (error) {
-      // If Gemini didn't return valid JSON, create a structured response
-      analysis = {
-        missingKeywords: [],
-        presentKeywords: [],
-        recommendations: [],
-        matchScore: 50,
-        analysis: analysisText,
-        rawResponse: analysisText
-      };
-    }
+    const analysis = JSON.parse(response.text);
 
     res.json({
       success: true,
