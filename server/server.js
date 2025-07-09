@@ -123,7 +123,7 @@ app.post('/api/analyze-resume', upload.single('resume'), async (req, res) => {
 
     // Generate analysis using Gemini
     const model = ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-2.5-pro",
       contents: prompt,
       config: {
         responseMimeType: "application/json",
