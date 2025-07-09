@@ -42,36 +42,13 @@ const ai = new GoogleGenAI({ apiKey });
 const analysisResponseSchema = {
   type: Type.OBJECT,
   properties: {
-    missingKeywords: {
-      type: Type.ARRAY,
-      items: { type: Type.STRING }
-    },
-    presentKeywords: {
-      type: Type.ARRAY,
-      items: {
-        type: Type.OBJECT,
-        properties: {
-          keyword: { type: Type.STRING },
-          found_in_resume: { type: Type.STRING },
-          section: { type: Type.STRING }
-        },
-        propertyOrdering: ["keyword", "found_in_resume", "section"]
-      }
-    },
-    recommendations: {
-      type: Type.ARRAY,
-      items: { type: Type.STRING }
-    },
-    matchScore: { type: Type.NUMBER },
-    analysis: { type: Type.STRING }
+    missing_keywords: { type: Type.ARRAY, items: { type: Type.STRING } },
+    present_keywords: { type: Type.ARRAY, items: { type: Type.STRING } },
+    recommendations: { type: Type.ARRAY, items: { type: Type.STRING } },
+    match_score: { type: Type.NUMBER },
+    summary: { type: Type.STRING }
   },
-  propertyOrdering: [
-    "missingKeywords",
-    "presentKeywords",
-    "recommendations",
-    "matchScore",
-    "analysis"
-  ]
+  required: ["missing_keywords", "present_keywords", "recommendations", "match_score", "summary"]
 };
 
 // Helper function to extract text from different file types
@@ -123,37 +100,25 @@ app.post('/api/analyze-resume', upload.single('resume'), async (req, res) => {
     }
 
     // Create prompt for Gemini
-    const prompt = `{
-  "prompt": "You are a professional resume analyzer specializing in Applicant Tracking Systems (ATS) optimization. I will provide you with a job description and a resume. Your goal is to identify how well the resume aligns with the job description's ATS-relevant keywords and provide actionable feedback. Focus on direct matches and common synonyms that an ATS would recognize.",
-  "analysis_tasks": [
-    {
-      "task_name": "missingKeywords",
-      "description": "Identify and list all distinct keywords and key phrases from the 'Responsibilities' and 'Requirements' sections of the job description that are either completely absent from the resume or significantly underrepresented (e.g., mentioned only once when clearly a core requirement). Consider both single words (e.g., 'React') and multi-word phrases (e.g., 'test-driven development')."
-    },
-    {
-      "task_name": "presentKeywords",
-      "description": "List all distinct keywords and key phrases from the 'Responsibilities' and 'Requirements' sections of the job description that are clearly present in the resume. For each keyword, indicate if it's a direct match or a strong synonym/related concept that an ATS would likely identify. Prioritize keywords that appear in the 'Experience' or 'Technical Skills' sections."
-    },
-    {
-      "task_name": "recommendations",
-      "description": "Provide specific, actionable recommendations for modifying the resume to improve its ATS keyword density and relevance. Recommendations should include: 1. How to incorporate missing keywords into specific sections (e.g., 'Add 'GraphQL' to your 'Experience' bullet points by describing a relevant project.'). 2. How to expand on existing keywords for stronger ATS recognition (e.g., 'Elaborate on 'CI/CD' experience with tools like Jenkins or GitHub Actions.'). 3. Suggestions for tailoring the 'Profile' or 'Summary' section to include high-priority keywords from the job description. 4. Advice on quantifying achievements where possible to demonstrate impact for ATS and human readers."
-    },
-    {
-      "task_name": "matchScore",
-      "description": "Provide an overall numerical score (1-100) representing the resume's alignment with the job description, specifically from an ATS perspective. A higher score indicates better keyword matching and relevance."
-    },
-    {
-      "task_name": "analysis",
-      "description": "Provide a brief, concise summary (2-3 sentences) of the ATS analysis, highlighting the resume's strengths in keyword matching and the primary areas for improvement."
-    }
-  ],
-}
+    const prompt = `
+  Analyze the provided resume against the job description from an ATS perspective.
 
-Job Description:
-${jobDescription}
+  **Job Description:**
+  ${jobDescription}
 
-Resume:
-${resumeText}
+  ---
+
+  **Resume:**
+  ${resumeText}
+
+  ---
+
+  **Instructions:**
+  1.  **missing_keywords**: List essential keywords from the job description that are missing in the resume.
+  2.  **present_keywords**: List keywords from the job description that are present in the resume.
+  3.  **recommendations**: Provide actionable advice to improve the resume's keyword alignment.
+  4.  **match_score**: Score the resume's keyword match on a scale of 1 to 100.
+  5.  **summary**: A brief two-sentence analysis of the resume's ATS-friendliness.
 `;
 
     // Generate analysis using Gemini

@@ -14,14 +14,14 @@ const ResultsSection = ({ analysis, clearResults }) => (
         <div className="result-card">
           <h3>Match Score</h3>
           <div className="score-display">
-            <span className="score-number">{analysis.matchScore || 0}/100</span>
+            <span className="score-number">{analysis.match_score || 0}/100</span>
           </div>
         </div>
         <div className="result-card">
           <h3>Missing Keywords</h3>
           <div className="keywords-list">
-            {analysis.missingKeywords && Array.isArray(analysis.missingKeywords) && analysis.missingKeywords.length > 0 ? (
-              analysis.missingKeywords.map((keyword, index) => (
+            {analysis.missing_keywords && Array.isArray(analysis.missing_keywords) && analysis.missing_keywords.length > 0 ? (
+              analysis.missing_keywords.map((keyword, index) => (
                 <span key={index} className="keyword missing">
                   {typeof keyword === 'string' ? keyword : JSON.stringify(keyword)}
                 </span>
@@ -34,8 +34,8 @@ const ResultsSection = ({ analysis, clearResults }) => (
         <div className="result-card">
           <h3>Present Keywords</h3>
           <div className="keywords-list">
-            {analysis.presentKeywords && Array.isArray(analysis.presentKeywords) && analysis.presentKeywords.length > 0 ? (
-              analysis.presentKeywords.map((keywordObj, index) => {
+            {analysis.present_keywords && Array.isArray(analysis.present_keywords) && analysis.present_keywords.length > 0 ? (
+              analysis.present_keywords.map((keywordObj, index) => {
                 if (typeof keywordObj === 'string') {
                   return (
                     <span key={index} className="keyword present">{keywordObj}</span>
@@ -76,10 +76,10 @@ const ResultsSection = ({ analysis, clearResults }) => (
             )}
           </div>
         </div>
-        {analysis.analysis && (
+        {analysis.summary && (
           <div className="result-card full-width">
             <h3>Summary</h3>
-            <p className="analysis-summary">{analysis.analysis}</p>
+            <p className="analysis-summary">{analysis.summary}</p>
           </div>
         )}
       </div>
