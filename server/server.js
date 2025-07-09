@@ -125,7 +125,12 @@ ${resumeText}
     // Try to parse the response as JSON, fallback to text if it's not valid JSON
     let analysis;
     try {
-      analysis = JSON.parse(analysisText);
+      let cleaned = analysisText.trim();
+      // Remove triple backticks and optional "json" after them
+      if (cleaned.startsWith('```')) {
+        cleaned = cleaned.replace(/^```[a-zA-Z]*\n?/, '').replace(/```$/, '');
+      }
+      analysis = JSON.parse(cleaned);
     } catch (error) {
       // If Gemini didn't return valid JSON, create a structured response
       analysis = {
