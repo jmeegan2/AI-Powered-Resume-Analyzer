@@ -19,7 +19,6 @@ A web application that analyzes resumes against job descriptions using Google Ge
 - Node.js (v16+ recommended)
 - npm or yarn
 - Google Gemini API key (set as `GEMINI_API_KEY` in your environment) 
-- To get API key go to https://aistudio.google.com/app/apikey and create a new key 
 
 ### Installation
 1. **Clone the repository:**
@@ -57,6 +56,9 @@ A web application that analyzes resumes against job descriptions using Google Ge
   ```env
   GEMINI_API_KEY=your_api_key_here
   ```
+- **How to get an API key:**
+  1. [Create a Google Cloud project](https://developers.google.com/workspace/guides/create-project) if you don't have one already.
+  2. Go to [Google AI Studio API Keys](https://aistudio.google.com/app/apikey) and create a new key for your project.
 
 ## License
 MIT 
