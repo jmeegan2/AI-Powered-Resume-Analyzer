@@ -60,3 +60,18 @@ A web application that analyzes resumes against job descriptions using Google Ge
 
 ## License
 MIT 
+
+## Photos
+
+### Default
+![Default Screen](./defaultscreen.png)
+
+### Picture 1
+![Picture 1](./picture1.png)
+
+### Picture 2
+![Picture 2](./picture2.png)
+
+### Picture 3
+![Picture 3](./picture3.png) 
+
