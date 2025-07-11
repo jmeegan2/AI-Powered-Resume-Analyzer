@@ -60,6 +60,11 @@ A web application that analyzes resumes against job descriptions using Google Ge
   1. [Create a Google Cloud project](https://developers.google.com/workspace/guides/create-project) if you don't have one already.
   2. Go to [Google AI Studio API Keys](https://aistudio.google.com/app/apikey) and create a new key for your project.
 
+## Deployment
+
+- The **backend server** is containerized and deployed using [Railway](https://railway.app/), which packages the Node.js/Express application and runs it in the cloud.
+- The **frontend** is hosted on [Vercel](https://vercel.com/), providing fast and reliable static site hosting for the React application.
+
 ## License
 MIT 
 
@@ -77,3 +82,5 @@ MIT
 ### Picture 3
 ![Picture 3](./picture3.png) 
 
+## Picture 4
+![Picture 4](./chatbot.png) 
