@@ -1,10 +1,10 @@
-import React, { useState, Component } from 'react';
+import React, { useState } from 'react';
 import './App.css';
 import Header from './components/Header';
 import InputSection from './components/InputSection';
 import ResultsSection from './components/ResultsSection';
 import ErrorMessage from './components/ErrorMessage';
-import ErrorBoundary from './components/ErrorBoundary';
+// import ErrorBoundary from './components/ErrorBoundary';
 import Chatbot from './components/Chatbot';
 
 function App() {
