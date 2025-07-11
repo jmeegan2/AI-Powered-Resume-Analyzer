@@ -163,7 +163,10 @@ app.post('/api/chatbot', async (req, res) => {
    // Generate analysis using Gemini
    const model = ai.models.generateContent({
     model: "gemini-2.5-flash",
-    contents: message
+    contents: message,
+    config: {
+      maxOutputTokens: 800 //dont want super long responses
+    }
   });
 
     const result = await model
