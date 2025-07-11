@@ -55,11 +55,11 @@ const analysisResponseSchema = {
 async function extractTextFromFile(file) {
   const buffer = file.buffer;
   const mimetype = file.mimetype;
-  
+
   if (mimetype === 'text/plain') {
     return buffer.toString('utf-8');
   }
-  
+
   if (mimetype === 'application/pdf') {
     // Use pdf-parse to extract text from PDF
     try {
@@ -69,11 +69,11 @@ async function extractTextFromFile(file) {
       throw new Error('Failed to extract text from PDF.');
     }
   }
-  
+
   if (mimetype.includes('word')) {
     throw new Error('DOC/DOCX text extraction not implemented. Please convert to TXT format.');
   }
-  
+
   return buffer.toString('utf-8');
 }
 
@@ -143,6 +143,42 @@ app.post('/api/analyze-resume', upload.single('resume'), async (req, res) => {
     console.error('Error analyzing resume:', error);
     res.status(500).json({
       error: 'Failed to analyze resume',
+      details: error.message
+    });
+  }
+});
+
+
+app.post('/api/chatbot', async (req, res) => {
+  try {
+    const { message } = req.body;
+
+    if (!message || typeof message !== 'string' || message.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        error: 'Message is required and must be a non-empty string.'
+      });
+    }
+
+   // Generate analysis using Gemini
+   const model = ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: message
+  });
+
+    const result = await model
+    const responseText = result.text
+
+    res.json({
+      success: true,
+      data: responseText
+    });
+
+  } catch (error) {
+    console.error('Error in chatbot:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate response from chatbot.',
       details: error.message
     });
   }

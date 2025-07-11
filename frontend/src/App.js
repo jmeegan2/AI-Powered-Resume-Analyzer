@@ -5,6 +5,7 @@ import InputSection from './components/InputSection';
 import ResultsSection from './components/ResultsSection';
 import ErrorMessage from './components/ErrorMessage';
 import ErrorBoundary from './components/ErrorBoundary';
+import Chatbot from './components/Chatbot';
 
 function App() {
   const [description, setDescription] = useState('');
@@ -91,6 +92,9 @@ function App() {
           />
         )}
       </div>
+      
+      {/* Chatbot Component */}
+      <Chatbot />
     </div>
   );
 }
