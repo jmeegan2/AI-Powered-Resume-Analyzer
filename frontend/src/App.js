@@ -36,8 +36,8 @@ function App() {
       formData.append('jobDescription', description);
       formData.append('resume', resumeFile);
 
-      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api/analyze-resume';
-      const response = await fetch(`${API_BASE_URL}`, {
+      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
+      const response = await fetch(`${API_BASE_URL}/api/analyze-resume`, {
         method: 'POST',
         body: formData,
       });
