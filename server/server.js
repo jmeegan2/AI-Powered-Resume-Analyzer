@@ -126,7 +126,7 @@ app.post('/api/analyze-resume', upload.single('resume'), async (req, res) => {
       model: "gemini-2.5-pro",
       contents: prompt,
       config: {
-        responseMimeType: "application/json",
+        responseMimeType: "application/json", //we want to use json since its structured data
         responseSchema: analysisResponseSchema
       }
     });
@@ -163,18 +163,14 @@ app.post('/api/chatbot', async (req, res) => {
    // Generate analysis using Gemini
    const model = ai.models.generateContent({
     model: "gemini-2.5-flash",
-    contents: message,
-    config: {
-      maxOutputTokens: 800 //dont want super long responses
-    }
+    contents: `${message} \n**Instructions:**: Limit your response to 2-3 sentences`
   });
 
     const result = await model
-    const responseText = result.text
-
+    
     res.json({
       success: true,
-      data: responseText
+      data: result.text
     });
 
   } catch (error) {
