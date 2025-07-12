@@ -151,7 +151,7 @@ app.post('/api/analyze-resume', upload.single('resume'), async (req, res) => {
 
 app.post('/api/chatbot', async (req, res) => {
   try {
-    const { message } = req.body;
+    const { message, messageHistory = [], analysis = null } = req.body;
 
     if (!message || typeof message !== 'string' || message.trim() === '') {
       return res.status(400).json({
@@ -160,13 +160,56 @@ app.post('/api/chatbot', async (req, res) => {
       });
     }
 
-   // Generate analysis using Gemini
-   const model = ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: `${message} \n**Instructions:**: Limit your response to 2-3 sentences`
-  });
+    // Build conversation history for context
+    const conversationHistory = messageHistory.map(msg => ({
+      role: msg.sender === 'user' ? 'user' : 'model',
+      parts: [{ text: msg.text }]
+    }));
 
-    const result = await model
+    // Add current message
+    conversationHistory.push({
+      role: 'user',
+      parts: [{ text: message }]
+    });
+
+    // Enhanced system instruction with analysis context
+    let systemInstructionText = 
+    `You are a helpful AI assistant for a resume analysis application. 
+    - Keep responses concise (2-3 sentences)
+    - Be professional
+    - You can help with any questions, resume-related or not`
+    ;
+
+    // Add analysis context if available
+    if (analysis) {
+      systemInstructionText += `
+
+**Current Resume Analysis Context:**
+- Match Score: ${analysis.match_score}/100
+- Missing Keywords: ${analysis.missing_keywords?.join(', ') || 'None'}
+- Present Keywords: ${analysis.present_keywords?.join(', ') || 'None'}
+- Summary: ${analysis.summary || 'No summary available'}
+
+**Instructions for Resume-Related Questions:**
+- If asked about match score, explain based on the actual score
+- If asked about missing keywords, provide specific suggestions
+- If asked about improvements, reference the actual recommendations
+- If asked about skills, suggest adding the missing keywords
+- Always be specific and actionable based on the analysis data`;
+    }
+
+    const systemInstruction = {
+      role: 'user',
+      parts: [{ text: systemInstructionText }]
+    };
+
+    // Generate analysis using Gemini with conversation history
+    const model = ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [systemInstruction, ...conversationHistory]
+    });
+
+    const result = await model;
     
     res.json({
       success: true,

@@ -95,7 +95,7 @@ function App() {
       </div>
       
       {/* Chatbot Component */}
-      <Chatbot />
+      <Chatbot analysis={analysis} />
     </div>
   );
 }
