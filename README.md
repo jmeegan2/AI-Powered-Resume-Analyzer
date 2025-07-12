@@ -84,3 +84,6 @@ MIT
 
 ## Picture 4
 ![Picture 4](./chatbot.png) 
+
+
+ToDO: add context to chatbot AI
