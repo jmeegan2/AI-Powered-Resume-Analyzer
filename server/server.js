@@ -38,6 +38,9 @@ if (!apiKey) {
 
 const ai = new GoogleGenAI({ apiKey });
 
+// In-memory storage for analysis sessions (in production, use Redis or database)
+const analysisSessions = new Map();
+
 // Define the response schema for Gemini output
 const analysisResponseSchema = {
   type: Type.OBJECT,
@@ -134,9 +137,19 @@ app.post('/api/analyze-resume', upload.single('resume'), async (req, res) => {
     const response = await model;
     const analysis = JSON.parse(response.text);
 
+    // Generate session ID and store full context
+    const sessionId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+    analysisSessions.set(sessionId, {
+      analysis,
+      resumeText,
+      jobDescription,
+      timestamp: Date.now()
+    });
+
     res.json({
       success: true,
-      analysis
+      analysis,
+      sessionId
     });
 
   } catch (error) {
@@ -148,10 +161,43 @@ app.post('/api/analyze-resume', upload.single('resume'), async (req, res) => {
   }
 });
 
+function buildSystemInstruction(sessionData = null) {
+  const baseInstruction = `You are a helpful AI assistant for a resume analysis application. 
+- Keep responses concise (2-3 sentences)
+- Be professional
+- You can help with any questions, resume-related or not`;
+
+  if (!sessionData) return baseInstruction;
+
+  const { analysis, resumeText, jobDescription } = sessionData;
+  
+  return `${baseInstruction}
+
+**Current Resume Analysis Context:**
+- Match Score: ${analysis.match_score}/100
+- Missing Keywords: ${analysis.missing_keywords?.join(', ') || 'None'}
+- Present Keywords: ${analysis.present_keywords?.join(', ') || 'None'}
+- Summary: ${analysis.summary || 'No summary available'}
+
+**Job Description:**
+${jobDescription}
+
+**Resume Content:**
+${resumeText}
+
+**Instructions for Resume-Related Questions:**
+- If asked about match score, explain based on the actual score
+- If asked about missing keywords, provide specific suggestions
+- If asked about improvements, reference the actual recommendations
+- If asked about skills, suggest adding the missing keywords
+- If asked about specific content, reference the actual resume text
+- If asked about job requirements, reference the actual job description
+- Always be specific and actionable based on the analysis data`;
+}
 
 app.post('/api/chatbot', async (req, res) => {
   try {
-    const { message, messageHistory = [], analysis = null } = req.body;
+    const { message, messageHistory = [], sessionId = null } = req.body;
 
     if (!message || typeof message !== 'string' || message.trim() === '') {
       return res.status(400).json({
@@ -172,31 +218,12 @@ app.post('/api/chatbot', async (req, res) => {
       parts: [{ text: message }]
     });
 
-    // Enhanced system instruction with analysis context
-    let systemInstructionText = 
-    `You are a helpful AI assistant for a resume analysis application. 
-    - Keep responses concise (2-3 sentences)
-    - Be professional
-    - You can help with any questions, resume-related or not`
-    ;
+    // Get session data if available
+    const sessionData = sessionId ? analysisSessions.get(sessionId) : null
 
-    // Add analysis context if available
-    if (analysis) {
-      systemInstructionText += `
 
-**Current Resume Analysis Context:**
-- Match Score: ${analysis.match_score}/100
-- Missing Keywords: ${analysis.missing_keywords?.join(', ') || 'None'}
-- Present Keywords: ${analysis.present_keywords?.join(', ') || 'None'}
-- Summary: ${analysis.summary || 'No summary available'}
-
-**Instructions for Resume-Related Questions:**
-- If asked about match score, explain based on the actual score
-- If asked about missing keywords, provide specific suggestions
-- If asked about improvements, reference the actual recommendations
-- If asked about skills, suggest adding the missing keywords
-- Always be specific and actionable based on the analysis data`;
-    }
+    // Use the streamlined function to build system instruction
+    const systemInstructionText = buildSystemInstruction(sessionData);
 
     const systemInstruction = {
       role: 'user',

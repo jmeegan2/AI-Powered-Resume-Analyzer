@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './Chatbot.css';
 
-const Chatbot = ({ analysis }) => {
+const Chatbot = ({ sessionId }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
@@ -40,7 +40,7 @@ const Chatbot = ({ analysis }) => {
         body: JSON.stringify({ 
           message: userMessage,
           messageHistory: recentMessages,
-          analysis: analysis // Pass the analysis context
+          sessionId: sessionId // Pass the session ID for context
         }),
       });
 
@@ -94,7 +94,7 @@ const Chatbot = ({ analysis }) => {
           <div className="chatbot-messages">
             {messages.length === 0 && (
               <div className="welcome-message">
-                {analysis ? (
+                {sessionId ? (
                   <p>👋 Hello! I can help you understand your resume analysis results. Ask me about your match score, missing keywords, or how to improve your resume!</p>
                 ) : (
                   <p>👋 Hello! I'm your AI assistant. How can I help you today?</p>
