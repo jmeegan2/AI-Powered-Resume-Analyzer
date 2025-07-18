@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './Chatbot.css';
 
-const Chatbot = () => {
+const Chatbot = ({ sessionId }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
@@ -28,12 +28,20 @@ const Chatbot = () => {
 
     try {
       const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/';
+      
+      // Prepare message history for context (last 10 messages to avoid token limits)
+      const recentMessages = messages.slice(-10);
+      
       const response = await fetch(`${API_BASE_URL}api/chatbot`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message: userMessage }),
+        body: JSON.stringify({ 
+          message: userMessage,
+          messageHistory: recentMessages,
+          sessionId: sessionId // Pass the session ID for context
+        }),
       });
 
       const data = await response.json();
@@ -86,7 +94,11 @@ const Chatbot = () => {
           <div className="chatbot-messages">
             {messages.length === 0 && (
               <div className="welcome-message">
-                <p>👋 Hello! I'm your AI assistant. How can I help you today?</p>
+                {sessionId ? (
+                  <p>👋 Hello! I can help you understand your resume analysis results. Ask me about your match score, missing keywords, or how to improve your resume!</p>
+                ) : (
+                  <p>👋 Hello! I'm your AI assistant. How can I help you today?</p>
+                )}
               </div>
             )}
             

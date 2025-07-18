@@ -12,6 +12,7 @@ function App() {
   const [resumeFile, setResumeFile] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState(null);
+  const [sessionId, setSessionId] = useState(null);
   const [error, setError] = useState(null);
 
   const handleFileChange = (event) => {
@@ -49,6 +50,7 @@ function App() {
       }
 
       setAnalysis(data.analysis);
+      setSessionId(data.sessionId);
     } catch (error) {
       console.error('Analysis error:', error);
       setError(error.message || 'Failed to analyze resume. Please try again.');
@@ -59,6 +61,7 @@ function App() {
 
   const clearResults = () => {
     setAnalysis(null);
+    setSessionId(null);
     setError(null);
   };
 
@@ -95,7 +98,7 @@ function App() {
       </div>
       
       {/* Chatbot Component */}
-      <Chatbot />
+      <Chatbot sessionId={sessionId} />
     </div>
   );
 }
