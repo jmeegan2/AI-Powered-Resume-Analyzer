@@ -3,13 +3,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { AnalysisResponse, SessionData } from '../models/analysis';
 import { sessionManager } from '../models/session';
 import multer from 'multer';
-
-const apiKey = process.env.GEMINI_API_KEY;
-if (!apiKey) {
-  console.error('Error: GEMINI_API_KEY environment variable is required');
-  process.exit(1);
-}
-const ai = createGeminiClient(apiKey);
+import { ai } from './geminiClient';
 
 // Configure multer for resume file uploads
 export const upload = multer({
@@ -76,10 +70,6 @@ export function getAnalysisSession(sessionId: string): SessionData | undefined {
 
 export function setAnalysisSession(sessionId: string, sessionData: SessionData): void {
   sessionManager.setSession(sessionId, sessionData);
-}
-
-export function createGeminiClient(apiKey: string) {
-  return new GoogleGenAI({ apiKey });
 }
 
 // Business logic for resume analysis

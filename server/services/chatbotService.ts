@@ -1,12 +1,6 @@
-import { getAnalysisSession, createGeminiClient } from './analysisService';
+import { getAnalysisSession } from './analysisService';
 import { ChatRequest } from '../models/analysis';
-
-const apiKey = process.env.GEMINI_API_KEY;
-if (!apiKey) {
-  console.error('Error: GEMINI_API_KEY environment variable is required');
-  process.exit(1);
-}
-const ai = createGeminiClient(apiKey);
+import { ai } from './geminiClient';
 
 function buildSystemInstruction(sessionData: any = null): string {
   const baseInstruction = `You are a helpful AI assistant for a resume analysis application. 
