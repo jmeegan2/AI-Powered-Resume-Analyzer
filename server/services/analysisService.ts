@@ -4,6 +4,13 @@ import { AnalysisResponse, SessionData } from '../models/analysis';
 import { sessionManager } from '../models/session';
 import multer from 'multer';
 
+const apiKey = process.env.GEMINI_API_KEY;
+if (!apiKey) {
+  console.error('Error: GEMINI_API_KEY environment variable is required');
+  process.exit(1);
+}
+const ai = createGeminiClient(apiKey);
+
 // Configure multer for resume file uploads
 export const upload = multer({
   storage: multer.memoryStorage(),
@@ -76,7 +83,7 @@ export function createGeminiClient(apiKey: string) {
 }
 
 // Business logic for resume analysis
-export async function analyzeResumeContent(jobDescription: string, resumeText: string, ai: GoogleGenAI): Promise<{ analysis: AnalysisResponse; sessionId: string }> {
+export async function analyzeResumeContent(jobDescription: string, resumeText: string): Promise<{ analysis: AnalysisResponse; sessionId: string }> {
   // Create prompt for Gemini
   const prompt = `
 Analyze the provided resume against the job description from an ATS perspective.
@@ -125,13 +132,13 @@ ${resumeText}
 }
 
 // Complete resume analysis process including file extraction
-export async function processResumeAnalysis(jobDescription: string, resumeFile: Express.Multer.File, ai: GoogleGenAI): Promise<{ analysis: AnalysisResponse; sessionId: string }> {
+export async function processResumeAnalysis(jobDescription: string, resumeFile: Express.Multer.File): Promise<{ analysis: AnalysisResponse; sessionId: string }> {
   try {
     // Extract text from resume
     const resumeText = await extractTextFromFile(resumeFile);
     
     // Analyze the resume content
-    return await analyzeResumeContent(jobDescription, resumeText, ai);
+    return await analyzeResumeContent(jobDescription, resumeText);
   } catch (error) {
     throw new Error(`Resume processing failed: ${error}`);
   }

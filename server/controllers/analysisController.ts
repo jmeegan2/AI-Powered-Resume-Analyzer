@@ -1,11 +1,6 @@
 import { Request, Response } from 'express';
-import { createGeminiClient, processResumeAnalysis } from '../services/analysisService';
-const apiKey = process.env.GEMINI_API_KEY;
-if (!apiKey) {
-  console.error('Error: GEMINI_API_KEY environment variable is required ');
-  process.exit(1);
-}
-const ai = createGeminiClient(apiKey);
+import { processResumeAnalysis } from '../services/analysisService';
+
 
 export const analyzeResume = async (req: Request, res: Response) => {
   try {
@@ -20,7 +15,7 @@ export const analyzeResume = async (req: Request, res: Response) => {
     }
 
     // Delegate all business logic to service
-    const { analysis, sessionId } = await processResumeAnalysis(jobDescription, resumeFile, ai);
+    const { analysis, sessionId } = await processResumeAnalysis(jobDescription, resumeFile);
 
     // Format and send response
     res.json({
