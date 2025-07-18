@@ -8,7 +8,8 @@
     "dev": "ts-node src/server.ts",
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "dev:watch": "nodemon --exec ts-node src/server.ts"
+    "dev:watch": "nodemon --exec ts-node src/server.ts",
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
@@ -23,16 +24,19 @@
     "dotenv": "^17.1.0",
     "express": "^5.1.0",
     "form-data": "^4.0.3",
+    "jest": "^30.0.4",
     "multer": "^2.0.1",
     "pdf-parse": "^1.1.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.3",
+    "@types/jest": "^30.0.0",
     "@types/multer": "^1.4.11",
     "@types/node": "^24.0.11",
     "@types/pdf-parse": "^1.1.4",
     "nodemon": "^3.1.10",
+    "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   }
